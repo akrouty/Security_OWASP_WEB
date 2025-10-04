@@ -1,7 +1,8 @@
-fastapi
-uvicorn
+fastapi>=0.118.0
+starlette>=0.47.2            # fixes GHSA-* advisories
 pydantic
-python-jose[cryptography]
+python-jose[cryptography]>=3.4.0   # fixes PYSEC-2024-233/232
+ecdsa>=0.19.1.post1          # patched for GHSA-wj6h-64fc-37mp
 passlib[argon2]
 structlog
 python-dotenv
