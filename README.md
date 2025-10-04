@@ -26,4 +26,4 @@ python -c "import secrets; print(secrets.token_urlsafe(64))"
 ```
 uvicorn app.main:app --reload
 ```
-Open http://127.0.0.1:8000/health **pokpo**
+Open http://127.0.0.1:8000/health *
