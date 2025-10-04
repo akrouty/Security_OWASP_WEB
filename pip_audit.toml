@@ -1,0 +1,5 @@
+ignore-vulns = [
+  # ecdsa GHSA; no patched release published on PyPI.
+  # We do NOT accept/verify ECDSA JWTs (HS256 only), so risk is not reachable.
+  "GHSA-wj6h-64fc-37mp"
+]

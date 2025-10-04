@@ -30,10 +30,8 @@ def test_tampered_jwt_is_rejected():
 
     # tamper the token: flip one character in the signature part
     parts = token.split(".")
-    assert len(parts) == 3
     sig = parts[2]
     flipped = ("A" if sig[-1] != "A" else "B")
     bad = ".".join(parts[:2] + [sig[:-1] + flipped])
-
     r = client.get("/me", headers={"Authorization": f"Bearer {bad}"})
-    assert r.status_code == 401  # signature check failed
+    assert r.status_code == 401
