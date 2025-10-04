@@ -240,13 +240,6 @@ click==8.3.0 \
     --hash=sha256:9b9f285302c6e3064f4330c05f05b81945b2a39544279343e6e7c5f27a9baddc \
     --hash=sha256:e7b8232224eba16f4ebe410c25ced9f7875cb5f3263ffc93cc3e8da705e229c4
     # via uvicorn
-colorama==0.4.6 \
-    --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
-    --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
-    # via
-    #   bandit
-    #   click
-    #   pytest
 cryptography==46.0.2 \
     --hash=sha256:04911b149eae142ccd8c9a68892a70c21613864afb47aba92d8c7ed9cc001023 \
     --hash=sha256:07c0eb6657c0e9cca5891f4e35081dbf985c8131825e21d99b4f440a8f496f36 \
@@ -833,9 +826,9 @@ urllib3==2.5.0 \
     --hash=sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760 \
     --hash=sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc
     # via requests
-uvicorn==0.30.6 \
-    --hash=sha256:4b15decdda1e72be08209e860a1e10e92439ad5b97cf44cc945fcbee66fc5788 \
-    --hash=sha256:65fd46fe3fda5bdc1b03b94eb634923ff18cd35b2f084813ea79d1f103f711b5
+uvicorn==0.37.0 \
+    --hash=sha256:4115c8add6d3fd536c8ee77f0e14a7fd2ebba939fed9b02583a97f80648f9e13 \
+    --hash=sha256:913b2b88672343739927ce381ff9e2ad62541f9f8289664fa1d1d3803fa2ce6c
     # via -r requirements.in
 
 # WARNING: The following packages were not pinned, but pip requires them to be
