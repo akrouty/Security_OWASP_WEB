@@ -41,7 +41,7 @@ jobs:
         run: pytest -q
 
       - name: pip-audit (CVE scan)
-        run: pip-audit -r requirements.txt --strict -c pip-audit.toml
+        run: pip-audit -r requirements.txt --strict 
 
       - name: Bandit (static checks)
         run: bandit -q -r app
