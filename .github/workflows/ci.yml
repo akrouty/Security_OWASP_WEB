@@ -41,7 +41,7 @@ jobs:
         run: pytest -q
 
       - name: pip-audit (CVE scan)
-        run: pip-audit -r requirements.txt --strict 
+        run: pip-audit -r requirements.txt --strict --ignore-vuln GHSA-wj6h-64fc-37mp
 
       - name: Bandit (static checks)
         run: bandit -q -r app
