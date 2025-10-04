@@ -34,7 +34,7 @@ def get_current_user(authorization = Depends(security)) -> User:
             token,
             SECRET_KEY,
             algorithms=[ALGO],
-            options={"leeway": 60}  # tolerate 60s clock drift / boundary
+            options={"verify_signature": True, "verify_exp": True}  # tolerate 60s clock drift / boundary
         )
         username: str | None = payload.get("sub")
         role: str | None = payload.get("role")
