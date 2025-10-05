@@ -54,7 +54,7 @@ jobs:
         run: |
           python - << 'PY'
           import os
-          from app.security.integrity import verify_checksums
+          from app.security.integrety import verify_checksums
           manifest = os.environ.get("INTEGRITY_MANIFEST", "integrity.json")
           verify_checksums(manifest, strict=True)
           print("Integrity OK")
