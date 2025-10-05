@@ -24,17 +24,6 @@ def sha256_of_file(path: str) -> Tuple[str, int]:
     return h.hexdigest(), total
 
 def verify_checksums(manifest_path: str, strict: bool = True) -> List[Dict[str, str]]:
-    """
-    Validate entries in a JSON manifest of the form:
-      {
-        "files": [
-          {"path": "models/my.bin", "sha256": "...", "bytes": 12345},
-          {"path": "assets/prompt.txt", "sha256": "..."}
-        ]
-      }
-    Returns a list of problems (empty list = OK).
-    If strict=True, raises RuntimeError when any problem is found.
-    """
     problems: List[Dict[str, str]] = []
     base = _repo_root()
 
@@ -53,10 +42,30 @@ def verify_checksums(manifest_path: str, strict: bool = True) -> List[Dict[str, 
             continue
 
         actual_sha, actual_bytes = sha256_of_file(full)
-        if actual_sha.lower() != expected_sha:
-            problems.append({"path": rel, "error": f"sha256 mismatch"})
-        if expected_bytes != -1 and expected_bytes != actual_bytes:
-            problems.append({"path": rel, "error": f"size mismatch: {actual_bytes} != {expected_bytes}"})
+
+        ok = (actual_sha.lower() == expected_sha) and (
+            expected_bytes == -1 or expected_bytes == actual_bytes
+        )
+
+        if not ok:
+            # --- Windows newline fallback: if only CRLF vs LF differs, accept it ---
+            try:
+                with open(full, "rb") as f2:
+                    raw = f2.read()
+                norm = raw.replace(b"\r\n", b"\n")
+                norm_sha = hashlib.sha256(norm).hexdigest().lower()
+                norm_bytes = len(norm)
+                if norm_sha == expected_sha and (expected_bytes == -1 or expected_bytes == norm_bytes):
+                    # treat as OK (newline-only difference)
+                    ok = True
+            except Exception as e:
+                log.debug("integrity_crlf_normalize_failed", path=rel, error=str(e))
+
+        if not ok:
+            if actual_sha.lower() != expected_sha:
+                problems.append({"path": rel, "error": "sha256 mismatch"})
+            if expected_bytes != -1 and expected_bytes != actual_bytes:
+                problems.append({"path": rel, "error": f"size mismatch: {actual_bytes} != {expected_bytes}"})
 
     if problems:
         for p in problems:

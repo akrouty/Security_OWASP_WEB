@@ -4,6 +4,9 @@ import time
 from typing import Callable, Awaitable
 from fastapi import Request, Response
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+import structlog   # <-- add this
+
+log = structlog.get_logger(__name__)  # <-- add this
 
 # ---- Prometheus metrics ----
 REQUESTS_TOTAL = Counter(
@@ -48,19 +51,28 @@ async def metrics_middleware(request: Request, call_next: Callable[[Request], Aw
         # Keep path cardinality stable: collapse IDs if needed
         if path.count("/") > 3:
             path = "/".join(path.split("/")[:3] + ["…"])
+
         REQUEST_LATENCY.labels(method=request.method, path=path).observe(dur)
+
         status = getattr(request.state, "forced_status", None)  # rarely used
-        code = str(status or getattr(request, "response_status", None) or getattr(getattr(request, "response", None), "status_code", "") or "200")
-        # If response object exists, prefer it
+        code = str(
+            status
+            or getattr(request, "response_status", None)
+            or getattr(getattr(request, "response", None), "status_code", "")
+            or "200"
+        )
+
+        # Best-effort fallback to app_state, but never crash
         try:
-            code = str(request.app.router.default.app_state.get("last_status", code))  # best-effort; optional
-        except Exception:
-            pass
-        # The safest: if response is available, use it (most common)
+            code = str(request.app.router.default.app_state.get("last_status", code))
+        except Exception as e:
+            log.debug("observability_best_effort_request_status_failed", error=str(e))
+
+        # Prefer real response status if available
         try:
             code = str(response.status_code)
-        except Exception:
-            pass
+        except Exception as e:
+            log.debug("observability_best_effort_response_status_failed", error=str(e))
 
         REQUESTS_TOTAL.labels(method=request.method, path=path, status=code).inc()
 
