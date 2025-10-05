@@ -2,6 +2,8 @@ from __future__ import annotations
 import time
 from typing import Tuple
 from fastapi import Request, HTTPException, status
+from app.security.observability import record_rate_limit
+
 
 # Simple in-memory sliding window. In prod, prefer Redis.
 _BUCKETS: dict[str, list[float]] = {}
@@ -22,7 +24,7 @@ def _allow(key: str, limit: int, window_s: int) -> Tuple[bool, int]:
     # compute retry-after
     retry_after = int(window_s - (now - bucket[0])) + 1
     return False, max(retry_after, 1)
-
+record_rate_limit("login")
 def rate_limit_login_dep(limit: int, window_s: int):
     """
     Dependency for /login: rate-limit by client IP (simple & safe).

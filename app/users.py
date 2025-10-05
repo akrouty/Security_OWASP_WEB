@@ -6,9 +6,9 @@ from passlib.hash import argon2
 Role = Literal["admin", "recruiter", "candidate"]
 
 class UserCreate(BaseModel):
-    username: str = Field(min_length=3, max_length=32)
-    password: str = Field(min_length=6, max_length=128)
-    role: Role
+    username: str
+    password: str 
+    role: Literal["admin","recruiter","candidate"]
 
 class UserRecord(BaseModel):
     username: str

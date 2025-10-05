@@ -10,3 +10,4 @@ httpx
 pytest
 pip-audit
 bandit
+prometheus-client>=0.20.0,<1.0
