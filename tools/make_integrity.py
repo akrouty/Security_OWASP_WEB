@@ -1,79 +1,28 @@
-# app/security/integrity.py
-from __future__ import annotations
-import hashlib, json, os
-from typing import List, Dict, Tuple
-import structlog
+# tools/make_integrity.py
+import os, sys, json
+here = os.path.dirname(os.path.abspath(__file__))
+repo_root = os.path.dirname(here)
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
 
-log = structlog.get_logger(__name__)
+from app.security.integrety import sha256_of_file, _repo_root
 
-def _repo_root() -> str:
-    # .../app/security -> .../app -> .../
-    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DEFAULT_FILES = ["assets/demo.txt"]
 
-def sha256_of_file(path: str) -> Tuple[str, int]:
-    h = hashlib.sha256()
-    total = 0
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-            total += len(chunk)
-    return h.hexdigest(), total
-
-def verify_checksums(manifest_path: str, strict: bool = True) -> List[Dict[str, str]]:
-    """
-    Validate entries in a JSON manifest of the form:
-      {
-        "files": [
-          {"path": "models/my.bin", "sha256": "...", "bytes": 12345},
-          {"path": "assets/prompt.txt", "sha256": "..."}
-        ]
-      }
-    Returns a list of problems (empty list = OK).
-    If strict=True, raises RuntimeError when any problem is found.
-    """
-    problems: List[Dict[str, str]] = []
+def main(paths):
     base = _repo_root()
-
-    with open(manifest_path, "r", encoding="utf-8") as fh:
-        data = json.load(fh)
-
-    entries = data.get("files", []) if isinstance(data, dict) else data
-    for entry in entries:
-        rel = entry["path"]
-        expected_sha = entry["sha256"].lower()
-        expected_bytes = int(entry.get("bytes", -1))
+    files = paths or DEFAULT_FILES
+    entries = []
+    for rel in files:
         full = os.path.join(base, rel)
-
         if not os.path.exists(full):
-            problems.append({"path": rel, "error": "missing"})
-            continue
+            raise SystemExit(f"Missing file: {rel}")
+        digest, size = sha256_of_file(full)
+        entries.append({"path": rel, "sha256": digest, "bytes": size})
+    out = os.path.join(base, "integrity.json")
+    with open(out, "w", encoding="utf-8") as fh:
+        json.dump({"files": entries}, fh, indent=2)
+    print(f"Wrote integrity.json with {len(entries)} file(s)")
 
-        actual_sha, actual_bytes = sha256_of_file(full)
-        if actual_sha.lower() != expected_sha:
-            problems.append({"path": rel, "error": "sha256 mismatch"})
-        if expected_bytes != -1 and expected_bytes != actual_bytes:
-            problems.append({"path": rel, "error": f"size mismatch: {actual_bytes} != {expected_bytes}"})
-
-    if problems:
-        for p in problems:
-            log.error("integrity_check_failed", **p)
-        if strict:
-            raise RuntimeError(f"Integrity check failed for {len(problems)} file(s)")
-        else:
-            log.warning("integrity_check_problems", count=len(problems))
-    else:
-        log.info("integrity_ok", count=len(entries))
-    return problems
-
-def enforce_integrity_from_env() -> None:
-    """
-    If INTEGRITY_MANIFEST is set, verify it.
-    STRICT_INTEGRITY=true -> raise on problems (crash on startup)
-    otherwise -> only warn in logs.
-    """
-    manifest = os.getenv("INTEGRITY_MANIFEST")
-    if not manifest:
-        return
-    strict = os.getenv("STRICT_INTEGRITY", "false").lower() == "true"
-    verify_checksums(manifest, strict=strict)
-    
+if __name__ == "__main__":
+    main(sys.argv[1:])
