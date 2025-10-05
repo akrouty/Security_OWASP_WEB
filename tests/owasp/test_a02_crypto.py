@@ -4,6 +4,7 @@ from app.main import app
 from app.security.crypto import secret_strength_ok
 
 client = TestClient(app)
+SAFE_PASS = "Strong#123"
 
 def signup(client, u, p, r):
     return client.post("/signup", json={"username": u, "password": p, "role": r})
@@ -25,8 +26,8 @@ def test_secret_strength_checker():
 @pytest.mark.a02
 def test_tampered_jwt_is_rejected():
     # create a user and get a valid token
-    signup(client, "admin", "Admin#123", "admin")
-    token = login(client, "admin", "Admin#123")
+    signup(client, "admin", SAFE_PASS, "admin")
+    token = login(client, "admin", SAFE_PASS)
 
     # tamper the token: flip one character in the signature part
     parts = token.split(".")

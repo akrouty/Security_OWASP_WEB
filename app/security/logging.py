@@ -1,6 +1,8 @@
 import structlog, uuid, time
 from starlette.types import ASGIApp, Receive, Scope, Send
 
+SENSITIVE_KEYS = {"password", "authorization", "token", "access_token", "refresh_token"}
+
 def setup_logging():
     structlog.configure(
         processors=[
@@ -9,6 +11,11 @@ def setup_logging():
             structlog.processors.JSONRenderer(),
         ]
     )
+def redact_sensitive(_, __, event_dict):
+    for k in list(event_dict.keys()):
+        if k.lower() in SENSITIVE_KEYS:
+            event_dict[k] = "[REDACTED]"
+    return event_dict
 
 class RequestIDMiddleware:
     def __init__(self, app: ASGIApp):

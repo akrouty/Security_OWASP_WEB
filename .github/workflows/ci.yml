@@ -45,3 +45,17 @@ jobs:
 
       - name: Bandit (static checks)
         run: bandit -q -r app
+
+         - name: Integrity check (A08)
+        env:
+          # if you later move the manifest, update this path
+          INTEGRITY_MANIFEST: integrity.json
+          STRICT_INTEGRITY: "true"
+        run: |
+          python - << 'PY'
+          import os
+          from app.security.integrity import verify_checksums
+          manifest = os.environ.get("INTEGRITY_MANIFEST", "integrity.json")
+          verify_checksums(manifest, strict=True)
+          print("Integrity OK")
+          PY

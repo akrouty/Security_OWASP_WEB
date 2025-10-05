@@ -17,13 +17,13 @@ def test_private_router_requires_auth():
 
 @pytest.mark.a01
 def test_admin_only_and_anti_idor():
-    assert signup("admin","Admin#123","admin").status_code == 200
-    assert signup("cyrine","Cyrine#123","candidate").status_code == 200
-    assert signup("ahmed","Ahmed#123","candidate").status_code == 200
+    assert signup("admin","Strong#123","admin").status_code == 200
+    assert signup("cyrine","Strong#123","candidate").status_code == 200
+    assert signup("ahmed","Strong#123","candidate").status_code == 200
 
-    t_admin  = login("admin","Admin#123")
-    t_cyrine = login("cyrine","Cyrine#123")
-    t_ahmed  = login("ahmed","Ahmed#123")
+    t_admin  = login("admin","Strong#123")
+    t_cyrine = login("cyrine","Strong#123")
+    t_ahmed  = login("ahmed","Strong#123")
 
     assert auth_get(t_admin,  "/admin/stats").status_code == 200
     assert auth_get(t_cyrine, "/admin/stats").status_code == 403
