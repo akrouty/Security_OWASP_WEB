@@ -13,6 +13,7 @@ from app.security.settings import BODY_MAX_BYTES
 from app.router_dbg import router as debug_router
 from app.security.integrety import enforce_integrity_from_env
 from app.security.observability import metrics_middleware, metrics_endpoint
+from app.routes_ssrf_demo import router as ssrf_router
 
 
 
@@ -20,6 +21,7 @@ setup_logging()
 enforce_secret_strength(SECRET_KEY, APP_ENV, strict=STRICT_SECRETS)
 init_db()
 enforce_integrity_from_env()
+
 app = FastAPI(title="OWASP Top 10 Starter")
 app.add_middleware(BodySizeLimit, max_body_bytes=BODY_MAX_BYTES)
 
@@ -34,6 +36,8 @@ app.include_router(bac_router)
 app.include_router(debug_router)
 
 app.include_router(apps_router)
+
+app.include_router(ssrf_router)
 
 @app.get("/health")
 def health():
