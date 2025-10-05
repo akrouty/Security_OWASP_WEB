@@ -1,0 +1,4 @@
+# normalize text files to LF everywhere
+*.txt text eol=lf
+*.md  text eol=lf
+*.json text eol=lf
