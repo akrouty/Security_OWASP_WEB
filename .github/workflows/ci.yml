@@ -46,7 +46,7 @@ jobs:
       - name: Bandit (static checks)
         run: bandit -q -r app
 
-         - name: Integrity check (A08)
+      - name: Integrity check (A08)
         env:
           # if you later move the manifest, update this path
           INTEGRITY_MANIFEST: integrity.json
