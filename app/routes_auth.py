@@ -69,21 +69,21 @@ def _set_refresh_cookie(resp: Response, refresh_token: str):
 @router.post("/login", response_model=Token)
 def login(
     body: Login,
+    response: Response,
     _rl=Depends(rate_limit_login_dep(RATE_LIMIT_LOGIN_MAX, RATE_LIMIT_LOGIN_WINDOW)),
 ):
     u = verify_user(body.username, body.password)
     if not u:
         record_auth_failure("invalid_credentials")
-        record_auth_failure("expired_token")
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     access = create_access_token(u.username, u.role)
     refresh = create_refresh_token(u.username)
 
-    resp = Response(media_type="application/json")
-    _set_refresh_cookie(resp, refresh)
-    resp.body = (f'{{"access_token":"{access}","token_type":"bearer"}}').encode()
-    return resp
+    _set_refresh_cookie(response, refresh)
+
+    return {"access_token": access, "token_type": "bearer"}
+
 
 @router.post("/refresh", response_model=Token)
 def refresh(request: Request):

@@ -4,9 +4,9 @@ import time
 from typing import Callable, Awaitable
 from fastapi import Request, Response
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
-import structlog   # <-- add this
+import structlog  
 
-log = structlog.get_logger(__name__)  # <-- add this
+log = structlog.get_logger(__name__)
 
 # ---- Prometheus metrics ----
 REQUESTS_TOTAL = Counter(
